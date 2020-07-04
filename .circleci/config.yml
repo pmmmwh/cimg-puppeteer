@@ -18,7 +18,7 @@ jobs:
             docker run \
               --name pptr_image_test \
               --mount type=bind,source="$(pwd)"/test,target=$WORKING_DIR \
-              pmmmwh/puppeteer:$CIRCLE_SHA1 \
+              $DOCKER_LOGIN/puppeteer:$CIRCLE_SHA1 \
               bash ./test.sh
 
 workflows:
