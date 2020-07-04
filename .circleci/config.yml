@@ -1,0 +1,25 @@
+version: 2.1
+
+orbs:
+  docker: circleci/docker@1.2.1
+
+jobs:
+  test:
+    executor: docker/machine
+    steps:
+      - checkout
+      - docker/check
+      - docker/build:
+          image: pmmmwh/cimg-puppeteer
+      - run:
+          command: |
+            docker run \
+              --name pptr_image_test \
+              --mount type=bind,source="$(pwd)"/test,target=$CIRCLE_WORKING_DIRECTORY \
+              pmmmwh/puppeteer:$CIRCLE_SHA1 \
+              bash ./test.sh
+
+workflows:
+  test:
+    jobs:
+      - test
