@@ -13,9 +13,11 @@ jobs:
           image: pmmmwh/cimg-puppeteer
       - run:
           command: |
+            WORKING_DIR="$(cd "$(dirname "$CIRCLE_WORKING_DIRECTORY")"; pwd)/$(basename "$CIRCLE_WORKING_DIRECTORY")"
+
             docker run \
               --name pptr_image_test \
-              --mount type=bind,source="$(pwd)"/test,target=$CIRCLE_WORKING_DIRECTORY \
+              --mount type=bind,source="$(pwd)"/test,target=$WORKING_DIR \
               pmmmwh/puppeteer:$CIRCLE_SHA1 \
               bash ./test.sh
 
