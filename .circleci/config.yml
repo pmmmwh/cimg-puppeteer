@@ -9,7 +9,8 @@ jobs:
     working_directory: ~/project
     steps:
       - checkout
-      - docker/check
+      - docker/check:
+          use-docker-credentials-store: true
       - docker/build:
           image: cimg-puppeteer
       - run:
