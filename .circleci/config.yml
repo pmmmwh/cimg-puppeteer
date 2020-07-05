@@ -15,10 +15,11 @@ jobs:
           name: Test built Docker image
           command: |
             docker run \
+              --init \
               --name cimg-puppeteer \
               --mount type=bind,source="$(pwd)"/test,target=/home/circleci/project \
               cimg-puppeteer:$CIRCLE_SHA1 \
-              sudo bash ./test.sh
+              bash ./test.sh
 
 workflows:
   test:

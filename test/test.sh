@@ -10,6 +10,9 @@ if [[ -f "/tmp/setup-headless-chromium.js" ]]; then
     fail "Setup script was not removed!"
 fi
 
+# List out files
+ls -l
+
 # Test for successful puppeteer installation
 yarn add puppeteer
 
