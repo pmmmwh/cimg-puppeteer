@@ -10,7 +10,7 @@ jobs:
       - checkout
       - docker/check
       - docker/build:
-          image: ${DOCKER_IMAGE}
+          image: michaelmok/cimg-puppeteer
       - run:
           command: |
             WORKING_DIR="$(cd "$(dirname "$CIRCLE_WORKING_DIRECTORY")"; pwd)/$(basename "$CIRCLE_WORKING_DIRECTORY")"
@@ -18,10 +18,8 @@ jobs:
             docker run \
               --name pptr_image_test \
               --mount type=bind,source="$(pwd)"/test,target=$WORKING_DIR \
-              $DOCKER_IMAGE:$CIRCLE_SHA1 \
+              $DOCKER_LOGIN/cimg-puppeteer:$CIRCLE_SHA1 \
               bash ./test.sh
-    environment:
-      DOCKER_IMAGE: ${DOCKER_LOGIN}/cimg-puppeteer
 
 workflows:
   test:
