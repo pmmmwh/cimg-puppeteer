@@ -14,11 +14,9 @@ jobs:
       - run:
           name: Test built Docker image
           command: |
-            WORKING_DIR="$(cd "$(dirname "$CIRCLE_WORKING_DIRECTORY")/$line"; pwd)/$(basename "$CIRCLE_WORKING_DIRECTORY")"
-
             docker run \
               --name pptr_image_test \
-              --mount type=bind,source="$(pwd)"/test,target=$WORKING_DIR \
+              --mount type=bind,source="$(pwd)"/test,target=/home/circleci/project \
               $DOCKER_LOGIN/cimg-puppeteer:$CIRCLE_SHA1 \
               bash ./test.sh
 
