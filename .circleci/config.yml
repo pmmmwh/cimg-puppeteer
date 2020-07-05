@@ -10,15 +10,15 @@ jobs:
       - checkout
       - docker/check
       - docker/build:
-          image: michaelmok/cimg-puppeteer
+          image: cimg-puppeteer
       - run:
           name: Test built Docker image
           command: |
             docker run \
-              --name pptr_image_test \
+              --name cimg-puppeteer \
               --mount type=bind,source="$(pwd)"/test,target=/home/circleci/project \
-              $DOCKER_LOGIN/cimg-puppeteer:$CIRCLE_SHA1 \
-              bash ./test.sh
+              cimg-puppeteer:$CIRCLE_SHA1 \
+              sudo bash ./test.sh
 
 workflows:
   test:
