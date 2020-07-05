@@ -12,8 +12,9 @@ jobs:
       - docker/build:
           image: michaelmok/cimg-puppeteer
       - run:
+          name: Test built Docker image
           command: |
-            WORKING_DIR="$(cd "$(dirname "$CIRCLE_WORKING_DIRECTORY")"; pwd)/$(basename "$CIRCLE_WORKING_DIRECTORY")"
+            WORKING_DIR="$(cd "$(dirname "$CIRCLE_WORKING_DIRECTORY")/$line"; pwd)/$(basename "$CIRCLE_WORKING_DIRECTORY")"
 
             docker run \
               --name pptr_image_test \
