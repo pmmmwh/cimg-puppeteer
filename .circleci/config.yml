@@ -41,7 +41,7 @@ jobs:
             docker cp ./Makefile $CONTAINER:/home/circleci/project/Makefile
             docker exec $CONTAINER make test
             docker kill $CONTAINER
-            docker rm $CONTAINER_NAME
+            docker rm $CONTAINER
           environment:
             CONTAINER: cimg-puppeteer
 
