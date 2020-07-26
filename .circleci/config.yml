@@ -61,7 +61,7 @@ jobs:
 
   build-and-publish:
     executor: machine
-    parallelism: 4
+#    parallelism: 4
     working_directory: ~/project
     steps:
       - checkout
