@@ -20,5 +20,5 @@ docker-tags() {
 # Ensure the directory containing the output file exists
 mkdir -p "$(dirname $2)"
 
-# Get all docker tags, remove quotes and output to file
-docker-tags "$1" | sed "s|['\"]||g" >"$2"
+# Get all docker tags, replace spaces to newlines, remove quotes and output to file
+docker-tags "$1" | tr " " "\n" | sed "s|['\"]||g" >"$2"

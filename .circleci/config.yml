@@ -38,7 +38,7 @@ jobs:
       - run:
           name: Build Docker images
           command: |
-            cat ./workspace/tags.txt | circleci tests split >./workspace/build-tags.txt
+            circleci tests split <./workspace/tags.txt >./workspace/build-tags.txt
             make build \
               name="$CIRCLE_PROJECT_REPONAME" \
               progress=plain \
@@ -48,7 +48,7 @@ jobs:
           command: |
             make test name="$CIRCLE_PROJECT_REPONAME" versions="$(cat ./workspace/build-tags.txt)"
 
-  build-and-publish:
+  publish:
     executor: machine
     parallelism: 4
     working_directory: ~/project
@@ -61,7 +61,7 @@ jobs:
       - run:
           name: Build Docker images
           command: |
-            cat ./workspace/tags.txt | circleci tests split >./workspace/build-tags.txt
+            circleci tests split <./workspace/tags.txt >./workspace/build-tags.txt
             make build \
               name="$DOCKER_LOGIN/puppeteer" \
               progress=plain \
@@ -80,7 +80,7 @@ workflows:
   release:
     jobs:
       - get-tags
-      - build-and-publish:
+      - publish:
           context: DOCKER_CREDENTIALS
           requires:
             - get-tags
