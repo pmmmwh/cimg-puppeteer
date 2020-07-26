@@ -4,11 +4,11 @@ FROM cimg/node:${VERSION} as builder
 
 COPY ./scripts/install-chromium-deps.js /tmp
 
-RUN sudo add-apt-repository universe && \
-  sudo apt-get update && \
-  sudo "$(which node)" /tmp/install-chromium-deps.js && \
-  sudo rm /tmp/install-chromium-deps.js && \
-  sudo rm -rf /var/lib/apt/lists/*
+RUN add-apt-repository universe && \
+  apt-get update && \
+  "$(which node)" /tmp/install-chromium-deps.js && \
+  rm /tmp/install-chromium-deps.js && \
+  rm -rf /var/lib/apt/lists/*
 
 FROM builder
 
