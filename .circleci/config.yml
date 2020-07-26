@@ -9,16 +9,16 @@ jobs:
     working_directory: ~/project
     steps:
       - checkout
-      - docker/check:
-          use-docker-credentials-store: true
-      - docker/build:
-          image: cimg-puppeteer
+      - run:
+          name: Build Docker image
+          command: |
+            make build \
+              name=$CIRCLE_PROJECT_REPONAME \
+              versions=current \
+              tag=$CIRCLE_SHA1
       - run:
           name: Test built Docker image
           command: |
-            CONTAINER=cimg-puppeteer
-            WORKING_DIR=/home/circleci/project
-
             docker run \
               --detach \
               --init \
@@ -26,15 +26,44 @@ jobs:
               --tty \
               --name $CONTAINER \
               --user circleci:circleci \
-              cimg-puppeteer:$CIRCLE_SHA1 \
+              $CIRCLE_PROJECT_REPONAME:$CIRCLE_SHA1 \
               bash
-            docker cp ./test/. $CONTAINER:$WORKING_DIR
-            docker exec $CONTAINER pwd
-            docker exec $CONTAINER sudo chown -R $USER: .
-            docker exec $CONTAINER sudo chmod +x ./test.sh
-            docker exec $CONTAINER ./test.sh
+            docker cp ./fixtures/. $CONTAINER:/home/circleci/project/fixtures
+            docker cp ./Makefile $CONTAINER:/home/circleci/project/Makefile
+            docker exec $CONTAINER make test
             docker kill $CONTAINER
-            docker rm $CONTAINER
+            docker rm $CONTAINER_NAME
+          environment:
+            CONTAINER: cimg-puppeteer
+
+  get-tags:
+    docker: cimg/base:2020.07
+    working_directory: ~/project
+    steps:
+      - checkout
+      - run:
+          name: Get all available tags for cimg/node
+          command: make get-tags name="cimg/node" output="./workspace/tags.txt"
+      - persist_to_workspace:
+          root: ./workspace
+          paths:
+            - tags.txt
+
+  build-and-publish:
+    executor: docker/machine
+    parallelism: 4
+    working_directory: ~/project
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ./workspace
+      - docker/check:
+          use-docker-credentials-store: true
+      - run:
+          name: Build Docker image
+          command: |
+            cat ./workspace/tags.txt | circleci tests split > ./workspace/build-tags.txt
+            make build name="$DOCKER_LOGIN/puppeteer" versions="$(cat ./workspace/build-tags.txt)"
 
 workflows:
   test:

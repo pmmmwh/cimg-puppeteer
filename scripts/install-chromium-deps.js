@@ -25,10 +25,7 @@ async function installChromiumDeps() {
     return [...acc, dependency];
   }, []);
 
-  const { stdout: installStdout } = await sudo('apt-get', ['install', '-y', ...dependencies]);
-  process.stdout.write(installStdout);
-
-  return dependencies;
+  await sudo('apt-get', ['install', '-y', ...dependencies]);
 }
 
 void installChromiumDeps();

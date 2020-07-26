@@ -1,8 +1,8 @@
-ARG NODE_VERSION=current
+ARG VERSION=current
 
-FROM cimg/node:${NODE_VERSION} as builder
+FROM cimg/node:${VERSION} as builder
 
-COPY ./lib/install-chromium-deps.js /tmp
+COPY ./scripts/install-chromium-deps.js /tmp
 
 RUN sudo add-apt-repository universe && \
   sudo apt-get update && \
@@ -13,4 +13,4 @@ RUN sudo add-apt-repository universe && \
 FROM builder
 
 RUN sudo sysctl -w kernel.unprivileged_userns_clone=1 && \
-  sudo sysctl -w kernel.yama.ptrace_scope=1
+  sudo sysctl -w kernel.yama.ptrace_scope=1 || true
