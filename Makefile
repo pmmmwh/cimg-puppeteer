@@ -7,9 +7,8 @@ help: ## Show this message
 .PHONY: build
 build: $(versions) ## Build specific versions of a Docker image
 
+# TODO: Add cache with $(name):$@
 $(versions):
-	@docker pull cimg/node:$@
-#	@docker pull $(name):$@
 	@DOCKER_BUILDKIT=1 docker build \
 		--build-arg BUILDKIT_INLINE_CACHE=1 \
 		--build-arg VERSION=$@ \
