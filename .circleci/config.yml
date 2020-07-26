@@ -37,7 +37,8 @@ jobs:
             CONTAINER: cimg-puppeteer
 
   get-tags:
-    docker: cimg/base:2020.07
+    docker:
+      - image: cimg/base:2020.07
     working_directory: ~/project
     steps:
       - checkout
@@ -66,7 +67,24 @@ jobs:
             make build name="$DOCKER_LOGIN/puppeteer" versions="$(cat ./workspace/build-tags.txt)"
 
 workflows:
+  version: 2
+
   test:
     jobs:
       - test:
           context: DOCKER_CREDENTIALS
+
+  release:
+    jobs:
+      - get-tags
+      - build-and-publish:
+          context: DOCKER_CREDENTIALS
+          requires:
+            - get-tags
+#    triggers:
+#      - schedule:
+#          cron: "0 0 * * *"
+#          filters:
+#            branches:
+#              only:
+#                - main
