@@ -13,38 +13,6 @@ executors:
       image: << parameters.image >>
 
 jobs:
-  test:
-    executor: machine
-    working_directory: ~/project
-    steps:
-      - checkout
-      - run:
-          name: Build Docker image
-          command: |
-            make build \
-              name=$CIRCLE_PROJECT_REPONAME \
-              versions=current \
-              tag=$CIRCLE_SHA1
-      - run:
-          name: Test built Docker image
-          command: |
-            docker run \
-              --detach \
-              --init \
-              --privileged \
-              --tty \
-              --name $CONTAINER \
-              --user circleci:circleci \
-              $CIRCLE_PROJECT_REPONAME:$CIRCLE_SHA1 \
-              bash
-            docker cp ./fixtures/. $CONTAINER:/home/circleci/project/fixtures
-            docker cp ./Makefile $CONTAINER:/home/circleci/project/Makefile
-            docker exec $CONTAINER make test
-            docker kill $CONTAINER
-            docker rm $CONTAINER
-          environment:
-            CONTAINER: cimg-puppeteer
-
   get-tags:
     docker:
       - image: cimg/base:2020.07
@@ -59,20 +27,38 @@ jobs:
           paths:
             - tags.txt
 
-  build-and-publish:
+  test:
     executor: machine
-#    parallelism: 4
+    # parallelism: 4
     working_directory: ~/project
     steps:
       - checkout
       - attach_workspace:
           at: ./workspace
+      - run:
+          name: Build Docker images
+          command: |
+            cat ./workspace/tags.txt | circleci tests split >./workspace/build-tags.txt
+            make build name="$CIRCLE_PROJECT_REPONAME" versions="$(cat ./workspace/build-tags.txt)"
+      - run:
+          name: Test built Docker images
+          command: |
+            make test name="$CIRCLE_PROJECT_REPONAME" versions="$(cat ./workspace/build-tags.txt)"
+
+  build-and-publish:
+    executor: machine
+    # parallelism: 4
+    working_directory: ~/project
+    steps:
+      - checkout
       - docker/check:
           use-docker-credentials-store: true
+      - attach_workspace:
+          at: ./workspace
       - run:
-          name: Build Docker image
+          name: Build Docker images
           command: |
-            cat ./workspace/tags.txt | circleci tests split > ./workspace/build-tags.txt
+            cat ./workspace/tags.txt | circleci tests split >./workspace/build-tags.txt
             make build name="$DOCKER_LOGIN/puppeteer" versions="$(cat ./workspace/build-tags.txt)"
 
 workflows:
@@ -80,8 +66,10 @@ workflows:
 
   test:
     jobs:
+      - get-tags
       - test:
-          context: DOCKER_CREDENTIALS
+          requires:
+            - get-tags
 
   release:
     jobs:
