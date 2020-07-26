@@ -3,9 +3,18 @@ version: 2.1
 orbs:
   docker: circleci/docker@1.2.1
 
+executors:
+  machine:
+    parameters:
+      image:
+        default: ubuntu-1604:202007-01
+        type: string
+    machine:
+      image: << parameters.image >>
+
 jobs:
   test:
-    executor: docker/machine
+    executor: machine
     working_directory: ~/project
     steps:
       - checkout
@@ -51,7 +60,7 @@ jobs:
             - tags.txt
 
   build-and-publish:
-    executor: docker/machine
+    executor: machine
     parallelism: 4
     working_directory: ~/project
     steps:
