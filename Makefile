@@ -9,6 +9,9 @@ build: $(versions) ## Build specific versions of a Docker image
 
 # TODO: Add cache with $(name):$@
 $(versions):
+	@printf "\033[34m%-8s\033[0m %s\n" \
+		"info" \
+		"Building image $(name):$(or $(tag),$@)..."
 	@DOCKER_BUILDKIT=1 docker build \
 		--build-arg BUILDKIT_INLINE_CACHE=1 \
 		--build-arg VERSION=$@ \
@@ -16,6 +19,9 @@ $(versions):
 		--file ./Dockerfile \
 		--tag $(name):$(or $(tag),$@) \
 		.
+	@printf "\033[32m%-8s\033[0m %s\n" \
+		"success" \
+		"Image $(name):$(or $(tag),$@) successfully built."
 
 .PHONY: get-tags
 get-tags: ## Get all available tags of a Docker image and output to a file
