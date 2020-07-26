@@ -5,10 +5,10 @@ help: ## Show this message
 	@awk 'BEGIN {FS=":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "\033[36m%-24s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 
 .PHONY: build
-build: build/$(versions) ## Build specific versions of a Docker image
+build: $(foreach version,$(versions),build/$(version)) ## Build specific versions of a Docker image
 
 # TODO: Add cache with $(name):$@
-build/$(versions):
+build/%:
 	@printf "\033[34m%-8s\033[0m %s\n" \
 		"info" \
 		"Building image $(name):$(or $(tag),$(@F))..."
@@ -70,9 +70,9 @@ verify-execution: ## Verify the built image can run Puppeteer
 		"Image have properly configured prerequisites for Puppeteer."
 
 .PHONY: test
-test: test/$(versions) ## Test specific versions of a Docker image
+test: $(foreach version,$(versions),test/$(version)) ## Test specific versions of a Docker image
 
-test/$(versions):
+test/%:
 	@docker run \
 		--detach --init --privileged --tty \
 		--name $(name) --user circleci:circleci \
