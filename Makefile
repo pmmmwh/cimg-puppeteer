@@ -17,6 +17,7 @@ build/%:
 		--build-arg VERSION=$(@F) \
 		--cache-from cimg/node:$(@F) \
 		--file ./Dockerfile \
+		--progress $(or $(progress),auto) \
 		--tag $(name):$(or $(tag),$(@F)) \
 		.
 	@printf "\033[32m%-8s\033[0m %s\n" \

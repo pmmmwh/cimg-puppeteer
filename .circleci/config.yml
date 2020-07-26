@@ -39,7 +39,10 @@ jobs:
           name: Build Docker images
           command: |
             cat ./workspace/tags.txt | circleci tests split >./workspace/build-tags.txt
-            make build name="$CIRCLE_PROJECT_REPONAME" versions="$(cat ./workspace/build-tags.txt)"
+            make build \
+              name="$CIRCLE_PROJECT_REPONAME" \
+              progress=plain \
+              versions="$(cat ./workspace/build-tags.txt)"
       - run:
           name: Test built Docker images
           command: |
@@ -59,7 +62,10 @@ jobs:
           name: Build Docker images
           command: |
             cat ./workspace/tags.txt | circleci tests split >./workspace/build-tags.txt
-            make build name="$DOCKER_LOGIN/puppeteer" versions="$(cat ./workspace/build-tags.txt)"
+            make build \
+              name="$DOCKER_LOGIN/puppeteer" \
+              progress=plain \
+              versions="$(cat ./workspace/build-tags.txt)"
 
 workflows:
   version: 2
