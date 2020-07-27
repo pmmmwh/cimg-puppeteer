@@ -51,6 +51,14 @@ install-chromium-deps: ## Install all native dependencies for Chromium on Ubuntu
 	@node ./scripts/install-chromium-deps.js
 	@$(call log-success,"Native dependencies for Chromium successfully installed.")
 
+.PHONY: publish
+publish: $(foreach version,$(versions),publish/$(version)) ## Publish specific versions of a Docker image
+
+publish/%:
+	@$(call log-info,"Publishing image $(name):$(or $(tag),$(@F))...")
+	@docker push docker.io/$(name):$(or $(tag),$(@F))
+	@$(call log-success,"Image $(name):$(or $(tag),$(@F)) successfully published.")
+
 .PHONY: verify-all
 verify-all: verify-cleanup verify-execution ## Run all verification steps
 

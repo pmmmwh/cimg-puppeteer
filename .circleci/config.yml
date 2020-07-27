@@ -4,7 +4,7 @@ commands:
   build-images:
     parameters:
       include-non-minor-tags:
-        default: false
+        default: true
         type: boolean
     steps:
       - attach_workspace:
@@ -16,14 +16,21 @@ commands:
                 name: Filter non-semver-minor tags
                 command: make filter-non-minor-tags input="./workspace/tags.txt"
       - run:
-          name: Split Docker builds
-          command: circleci tests split <./workspace/tags.txt >./workspace/split-tags.txt
+          name: Split and set Docker tags to build
+          command: echo 'export VERSIONS=$(circleci tests split <./workspace/tags.txt | tr "\n" " ")' >> $BASH_ENV
       - run:
           name: Build Docker images
           command: |
-            JOBS=$(grep -Pc '^processor' /proc/cpuinfo)
-            VERSIONS=$(cat ./workspace/split-tags.txt | tr "\n" " ")
-            make -j ${JOBS} -O build name="${DOCKER_LOGIN}/puppeteer" progress="plain" versions="${VERSIONS}"
+            make -j "${CONCURRENCY:=1}" -O build \
+              name="${DOCKER_LOGIN}/puppeteer" \
+              progress="plain" \
+              versions="${VERSIONS}"
+
+  set-concurrency:
+    steps:
+      - run:
+          name: Set max possible concurrency for current executor
+          command: echo 'export CONCURRENCY="$(grep -cP '^processor' /proc/cpuinfo)"' >> $BASH_ENV
 
 orbs:
   docker: circleci/docker@1.2.1
@@ -58,10 +65,12 @@ jobs:
     working_directory: ~/project
     steps:
       - checkout
-      - build-images
+      - set-concurrency
+      - build-images:
+          include-non-minor-tags: false
       - run:
           name: Test built Docker images
-          command: make test name="${DOCKER_LOGIN}/puppeteer" versions="$(cat ./workspace/build-tags.txt)"
+          command: make -j "${CONCURRENCY}" -O test name="${DOCKER_LOGIN}/puppeteer" versions="${VERSIONS}"
 
   publish:
     executor: machine
@@ -71,8 +80,11 @@ jobs:
       - checkout
       - docker/check:
           use-docker-credentials-store: true
-      - build-images:
-          include-non-minor-tags: true
+      - set-concurrency
+      - build-images
+      - run:
+          name: Publish built Docker images
+          command: make -j "${CONCURRENCY}" -O publish name="${DOCKER_LOGIN}/puppeteer" versions="${VERSIONS}"
 
 workflows:
   version: 2
