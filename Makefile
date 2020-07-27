@@ -33,6 +33,12 @@ build/%:
 		.
 	@$(call log-success,"Image $(name):$(or $(tag),$(@F)) successfully built.")
 
+.PHONY: filter-non-minor-tags
+filter-non-minor-tags: ## Filter out all non-semver-minor tags from an input file
+	@$(call log-info,"Filtering all semver minor tags in $(input)...")
+	@bash ./scripts/filter-non-minor-tags.sh $(input)
+	@$(call log-success,"Non-semver-minor tags in $(input) successfully filtered.")
+
 .PHONY: get-tags
 get-tags: ## Get all available tags of a Docker image and output to a file
 	@$(call log-info,"Fetching all available tags for $(name)...")
@@ -54,6 +60,7 @@ verify-cleanup: ## Verify the built image does not contain unwanted script files
 		$(call log-error,"Installation script for Chromium dependencies was not removed!"); \
 		exit 1; \
 	fi
+	@$(call log-success,"Image have properly cleaned up installation scripts!")
 
 .PHONY: verify-execution
 verify-execution: ## Verify the built image can run Puppeteer
