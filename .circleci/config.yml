@@ -21,8 +21,9 @@ commands:
       - run:
           name: Build Docker images
           command: |
+            JOBS=$(grep -Pc '^processor' /proc/cpuinfo)
             VERSIONS=$(cat ./workspace/split-tags.txt | tr "\n" " ")
-            make build name="${DOCKER_LOGIN}/puppeteer" progress="plain" versions="${VERSIONS}"
+            make -j ${JOBS} -O build name="${DOCKER_LOGIN}/puppeteer" progress="plain" versions="${VERSIONS}"
 
 orbs:
   docker: circleci/docker@1.2.1
