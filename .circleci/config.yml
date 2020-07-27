@@ -20,7 +20,9 @@ commands:
           command: circleci tests split <./workspace/tags.txt >./workspace/split-tags.txt
       - run:
           name: Build Docker images
-          command: make build name="${DOCKER_LOGIN}/puppeteer" progress="plain" versions="$(cat ./workspace/split-tags.txt)"
+          command: |
+            VERSIONS=$(cat ./workspace/split-tags.txt | tr "\n" " ")
+            make build name="${DOCKER_LOGIN}/puppeteer" progress="plain" versions="${VERSIONS}"
 
 orbs:
   docker: circleci/docker@1.2.1
