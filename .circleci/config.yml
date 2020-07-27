@@ -1,5 +1,27 @@
 version: 2.1
 
+commands:
+  build-images:
+    parameters:
+      include-non-minor-tags:
+        default: false
+        type: boolean
+    steps:
+      - attach_workspace:
+          at: ./workspace
+      - unless:
+          condition: << parameters.include-non-minor-tags >>
+          steps:
+            - run:
+                name: Filter non-semver-minor tags
+                command: make filter-non-minor-tags input="./workspace/tags.txt"
+      - run:
+          name: Split Docker builds
+          command: circleci tests split <./workspace/tags.txt >./workspace/split-tags.txt
+      - run:
+          name: Build Docker images
+          command: make build name="${DOCKER_LOGIN}/puppeteer" progress="plain" versions="$(cat ./workspace/split-tags.txt)"
+
 orbs:
   docker: circleci/docker@1.2.1
 
@@ -33,20 +55,10 @@ jobs:
     working_directory: ~/project
     steps:
       - checkout
-      - attach_workspace:
-          at: ./workspace
-      - run:
-          name: Build Docker images
-          command: |
-            circleci tests split <./workspace/tags.txt >./workspace/build-tags.txt
-            make build \
-              name="$CIRCLE_PROJECT_REPONAME" \
-              progress=plain \
-              versions="$(cat ./workspace/build-tags.txt)"
+      - build-images
       - run:
           name: Test built Docker images
-          command: |
-            make test name="$CIRCLE_PROJECT_REPONAME" versions="$(cat ./workspace/build-tags.txt)"
+          command: make test name="${DOCKER_LOGIN}/puppeteer" versions="$(cat ./workspace/build-tags.txt)"
 
   publish:
     executor: machine
@@ -56,16 +68,8 @@ jobs:
       - checkout
       - docker/check:
           use-docker-credentials-store: true
-      - attach_workspace:
-          at: ./workspace
-      - run:
-          name: Build Docker images
-          command: |
-            circleci tests split <./workspace/tags.txt >./workspace/build-tags.txt
-            make build \
-              name="$DOCKER_LOGIN/puppeteer" \
-              progress=plain \
-              versions="$(cat ./workspace/build-tags.txt)"
+      - build-images:
+          include-non-minor-tags: true
 
 workflows:
   version: 2
@@ -77,13 +81,13 @@ workflows:
           requires:
             - get-tags
 
-  release:
-    jobs:
-      - get-tags
-      - publish:
-          context: DOCKER_CREDENTIALS
-          requires:
-            - get-tags
+#  release:
+#    jobs:
+#      - get-tags
+#      - publish:
+#          context: DOCKER_CREDENTIALS
+#          requires:
+#            - get-tags
 #    triggers:
 #      - schedule:
 #          cron: "0 0 * * *"
