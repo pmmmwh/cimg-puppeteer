@@ -90,12 +90,12 @@ test/%:
 	@CONTAINER="$(name)-$(or $(tag),$(@F))" && \
 	docker run \
 		--detach --init --privileged --tty \
-		--name ${CONTAINER} --user circleci:circleci \
+		--name $${CONTAINER} --user circleci:circleci \
 		$(name):$(or $(tag),$(@F)) \
 		bash && \
-	docker cp ./fixtures/. ${CONTAINER}:/home/circleci/project/fixtures && \
-	docker cp ./Makefile ${CONTAINER}:/home/circleci/project/Makefile && \
-	docker exec ${CONTAINER} make verify-all && \
-	docker kill ${CONTAINER} 1>/dev/null && \
-	docker rm ${CONTAINER} 1>/dev/null
+	docker cp ./fixtures/. $${CONTAINER}:/home/circleci/project/fixtures && \
+	docker cp ./Makefile $${CONTAINER}:/home/circleci/project/Makefile && \
+	docker exec $${CONTAINER} make verify-all && \
+	docker kill $${CONTAINER} 1>/dev/null && \
+	docker rm $${CONTAINER} 1>/dev/null
 	@$(call log-success,"Tests on image $(name):$(or $(tag),$(@F)) passed!")
