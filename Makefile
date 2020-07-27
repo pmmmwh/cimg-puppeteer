@@ -60,7 +60,11 @@ verify-cleanup: ## Verify the built image does not contain unwanted script files
 		$(call log-error,"Installation script for Chromium dependencies was not removed!"); \
 		exit 1; \
 	fi
-	@$(call log-success,"Image have properly cleaned up installation scripts!")
+	@if [ -n "$$(ls -A /var/lib/apt/lists 2>/dev/null)" ]; then \
+		$(call log-error,"Some APT package lists were not removed!"); \
+		exit 1; \
+	fi
+	@$(call log-success,"Image have been properly cleaned up!")
 
 .PHONY: verify-execution
 verify-execution: ## Verify the built image can run Puppeteer
