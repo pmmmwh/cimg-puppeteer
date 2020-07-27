@@ -87,7 +87,7 @@ test: $(foreach version,$(versions),test/$(version)) ## Test specific versions o
 
 test/%:
 	@$(call log-info,"Running tests on image $(name):$(or $(tag),$(@F))...")
-	@CONTAINER="$(name)-$(or $(tag),$(@F))" && \
+	@CONTAINER="test-$(or $(tag),$(@F))" && \
 	docker run \
 		--detach --init --privileged --tty \
 		--name $${CONTAINER} --user circleci:circleci \
