@@ -17,7 +17,7 @@ commands:
                 command: make filter-non-minor-tags input="./workspace/tags.txt"
       - run:
           name: Split and set Docker tags to build
-          command: echo 'export VERSIONS=$(circleci tests split <./workspace/tags.txt | tr "\n" " ")' >> $BASH_ENV
+          command: echo 'export VERSIONS="$(circleci tests split <./workspace/tags.txt | tr "\n" " ")"' >> $BASH_ENV
       - run:
           name: Build Docker images
           command: |
