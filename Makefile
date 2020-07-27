@@ -77,7 +77,7 @@ verify-cleanup: ## Verify the built image does not contain unwanted script files
 .PHONY: verify-execution
 verify-execution: ## Verify the built image can run Puppeteer
 	@$(call log-info,"Installing the latest version of Puppeteer...")
-	@npm install puppeteer
+	@npm install --loglevel error puppeteer
 	@$(call log-info,"Testing for successful Puppeteer initialization...")
 	@node ./fixtures/puppeteer-init.js
 	@$(call log-success,"Image have properly configured prerequisites for Puppeteer.")
@@ -95,7 +95,7 @@ test/%:
 		bash && \
 	docker cp ./fixtures/. $${CONTAINER}:/home/circleci/project/fixtures && \
 	docker cp ./Makefile $${CONTAINER}:/home/circleci/project/Makefile && \
-	docker exec $${CONTAINER} make verify-all && \
-	docker kill $${CONTAINER} 1>/dev/null && \
-	docker rm $${CONTAINER} 1>/dev/null
+	docker exec $${CONTAINER} make verify-all
+#	docker kill $${CONTAINER} 1>/dev/null && \
+#	docker rm $${CONTAINER} 1>/dev/null
 	@$(call log-success,"Tests on image $(name):$(or $(tag),$(@F)) passed!")
