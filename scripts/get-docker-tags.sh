@@ -14,11 +14,12 @@ docker-tags() {
   # Get list of image tags
   result="$(curl -s -G -H "Accept: application/json" -H "Authorization: Bearer $token" ${listUri} | jq -r '.tags | @sh')"
 
-  echo ${result}
+  # Output with spaces as newlines
+  printf "%s\n" ${result}
 }
 
 # Ensure the directory containing the output file exists
 mkdir -p "$(dirname $2)"
 
-# Get all docker tags, replace spaces to newlines, remove quotes and output to file
-docker-tags "$1" | tr " " "\n" | sed "s|['\"]||g" >"$2"
+# Get all docker tags, remove quotes and output to file
+docker-tags "$1" | sed "s|['\"]||g" >"$2"
