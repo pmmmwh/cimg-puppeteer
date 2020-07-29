@@ -70,7 +70,7 @@ jobs:
           include-non-minor-tags: false
       - run:
           name: Test built Docker images
-          command: make -j "${CONCURRENCY}" -O test name="${DOCKER_LOGIN}/puppeteer" versions="${VERSIONS}"
+          command: make test name="${DOCKER_LOGIN}/puppeteer" versions="${VERSIONS}"
 
   publish:
     executor: machine
