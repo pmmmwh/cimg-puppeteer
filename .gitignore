@@ -5,6 +5,9 @@
 .idea
 .vscode
 
+# npm config
+*package.json
+
 # lockfiles
 *package-lock.json
 *yarn.lock
