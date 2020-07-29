@@ -9,7 +9,7 @@ define log-success
 endef
 
 define log-error
-	printf "\033[31m%-8s\033[0m %s\n" "error" $(1)
+	printf "\033[31m%-8s\033[0m %s\n" "error" $(1) >&2
 endef
 
 .PHONY: help
@@ -19,7 +19,7 @@ help: ## Show this message
 progress ?= auto
 
 .PHONY: build
-build: $(foreach version,$(versions),build/$(version)) ## Build specific versions of a Docker image
+build: $(foreach build-version,$(versions),build/$(build-version)) ## Build specific versions of a Docker image
 
 build/%:
 	@$(call log-info,"Building image $(name):$(or $(tag),$(@F))...")
@@ -36,23 +36,23 @@ build/%:
 .PHONY: filter-non-minor-tags
 filter-non-minor-tags: ## Filter out all non-semver-minor tags from an input file
 	@$(call log-info,"Filtering all semver minor tags in $(input)...")
-	@bash ./scripts/filter-non-minor-tags.sh $(input)
+	@bash ./run.sh minor-tags $(input) $(input)
 	@$(call log-success,"Non-semver-minor tags in $(input) successfully filtered.")
 
 .PHONY: get-tags
 get-tags: ## Get all available tags of a Docker image and output to a file
 	@$(call log-info,"Fetching all available tags for $(name)...")
-	@bash ./scripts/get-docker-tags.sh $(name) $(output)
+	@bash ./run.sh docker-tags $(name) $(output)
 	@$(call log-success,"Docker tags for $(name) saved to $(output).")
 
 .PHONY: install-chromium-deps
 install-chromium-deps: ## Install all native dependencies for Chromium on Ubuntu
 	@$(call log-info,"Installing native dependencies for Chromium...")
-	@node ./scripts/install-chromium-deps.js
+	@node ./install-chromium-deps.js
 	@$(call log-success,"Native dependencies for Chromium successfully installed.")
 
 .PHONY: publish
-publish: $(foreach version,$(versions),publish/$(version)) ## Publish specific versions of a Docker image
+publish: $(foreach publish-version,$(versions),publish/$(publish-version)) ## Publish specific versions of a Docker image
 
 publish/%:
 	@$(call log-info,"Publishing image $(name):$(or $(tag),$(@F))...")
@@ -75,27 +75,19 @@ verify-cleanup: ## Verify the built image does not contain unwanted script files
 	@$(call log-success,"Image have been properly cleaned up!")
 
 .PHONY: verify-execution
-verify-execution: ## Verify the built image can run Puppeteer
-	@$(call log-info,"Installing the latest version of Puppeteer...")
-	@npm install --loglevel error puppeteer
+verify-execution: $(foreach pptr-version,$(or $(puppeteer),"latest"),verify-execution/$(pptr-version)) ## Verify the built image can run Puppeteer
+
+verify-execution/%:
+	@$(call log-info,"Installing Puppeteer@$(@F)...")
+	@npm install --loglevel error puppeteer@$(@F)
 	@$(call log-info,"Testing for successful Puppeteer initialization...")
 	@node ./fixtures/puppeteer-init.js
-	@$(call log-success,"Image have properly configured prerequisites for Puppeteer.")
+	@$(call log-success,"Image have properly configured prerequisites for Puppeteer@$(@F).")
 
 .PHONY: test
-test: $(foreach version,$(versions),test/$(version)) ## Test specific versions of a Docker image
+test: $(foreach test-version,$(versions),test/$(test-version)) ## Test specific versions of a Docker image
 
 test/%:
 	@$(call log-info,"Running tests on image $(name):$(or $(tag),$(@F))...")
-	@CONTAINER="test-$(or $(tag),$(@F))" && \
-	docker run \
-		--detach --init --privileged --tty \
-		--name $${CONTAINER} --user circleci:circleci \
-		$(name):$(or $(tag),$(@F)) \
-		bash && \
-	docker cp ./fixtures/. $${CONTAINER}:/home/circleci/project/fixtures && \
-	docker cp ./Makefile $${CONTAINER}:/home/circleci/project/Makefile && \
-	docker exec $${CONTAINER} make verify-all
-#	docker kill $${CONTAINER} 1>/dev/null && \
-#	docker rm $${CONTAINER} 1>/dev/null
+	@bash ./run.sh "test" $(name) $(or $(tag),$(@F))
 	@$(call log-success,"Tests on image $(name):$(or $(tag),$(@F)) passed!")
