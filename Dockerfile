@@ -8,7 +8,7 @@ LABEL maintainer="Michael Mok"
 # older versions of cimg/node does not have a working sudo installation.
 USER root
 
-COPY ./scripts/install-chromium-deps.js /tmp
+COPY ./install-chromium-deps.js /tmp
 
 # All Ubuntu dependencies related actions should be handled here -
 # it has to be a single RUN instruction for cacheability and image size.
