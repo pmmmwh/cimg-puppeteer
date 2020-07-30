@@ -5,6 +5,6 @@ const puppeteer = require('puppeteer');
     headless: true,
   });
   await browser.close();
-})().catch(e => {
+})().catch((e) => {
   throw e;
 });

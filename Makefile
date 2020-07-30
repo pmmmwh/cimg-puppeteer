@@ -79,7 +79,9 @@ verify-execution: $(foreach pptr-version,$(or $(puppeteer),"latest"),verify-exec
 
 verify-execution/%:
 	@$(call log-info,"Installing Puppeteer@$(@F)...")
-	@npm install --loglevel error puppeteer@$(@F)
+	@PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=1 npm install --loglevel error puppeteer@$(@F)
+	@$(call log-info,"Downloading Chromium...")
+	@node ./fixtures/chromium-download.js
 	@$(call log-info,"Testing for successful Puppeteer initialization...")
 	@node ./fixtures/puppeteer-init.js
 	@$(call log-success,"Image have properly configured prerequisites for Puppeteer@$(@F).")
