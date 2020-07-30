@@ -83,6 +83,7 @@ async function runWithRetry(
         setTimeout(resolve, delay * Math.pow(backoff, currentRetry + 1));
       });
 
+      console.log('Retrying...')
       return runWithRetry(fn, {
         backoff,
         currentRetry: currentRetry + 1,
