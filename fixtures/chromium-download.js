@@ -1,11 +1,10 @@
 const cp = require('child_process');
+const fs = require('fs');
+const path = require('path');
 
 function downloadChromium() {
   return new Promise((resolve, reject) => {
-    const instance = cp.spawn('node', [
-      '--unhandled-rejections=strict',
-      require.resolve('puppeteer/install'),
-    ]);
+    const instance = cp.spawn('node', [require.resolve('puppeteer/install')]);
     let didResolve = false;
 
     function handleStdout(data) {
@@ -28,7 +27,7 @@ function downloadChromium() {
     instance.stdout.on('data', handleStdout);
     instance.stderr.on('data', handleStderr);
 
-    instance.on('close', (code, signal) => {
+    instance.on('close', (code) => {
       instance.stdout.removeListener('data', handleStdout);
       instance.stderr.removeListener('data', handleStderr);
 
@@ -38,7 +37,12 @@ function downloadChromium() {
           resolve();
         }
       } else {
-        reject(signal);
+        const installPath = path.join(__dirname, '..', 'node_modules/puppeteer/.local-chromium');
+        if (fs.existsSync(installPath)) {
+          fs.rmdirSync(installPath);
+        }
+
+        reject(new Error('Chromium download failed!'));
       }
     });
 
