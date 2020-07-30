@@ -2,7 +2,10 @@ const cp = require('child_process');
 
 function downloadChromium() {
   return new Promise((resolve, reject) => {
-    const instance = cp.spawn('node', [require.resolve('puppeteer/install')]);
+    const instance = cp.spawn('node', [
+      '--unhandled-rejections=strict',
+      require.resolve('puppeteer/install'),
+    ]);
     let didResolve = false;
 
     function handleStdout(data) {
@@ -25,13 +28,17 @@ function downloadChromium() {
     instance.stdout.on('data', handleStdout);
     instance.stderr.on('data', handleStderr);
 
-    instance.on('close', () => {
+    instance.on('close', (code, signal) => {
       instance.stdout.removeListener('data', handleStdout);
       instance.stderr.removeListener('data', handleStderr);
 
-      if (!didResolve) {
-        didResolve = true;
-        resolve();
+      if (code === 0) {
+        if (!didResolve) {
+          didResolve = true;
+          resolve();
+        }
+      } else {
+        reject(signal);
       }
     });
 
@@ -41,16 +48,20 @@ function downloadChromium() {
   });
 }
 
-async function runWithRetry(fn, { currentRetry = 0, delay = 1000, maxRetries = 3 } = {}) {
+async function runWithRetry(
+  fn,
+  { backoff = 2, currentRetry = 0, delay = 100, maxRetries = 3 } = {}
+) {
   try {
     return await fn();
   } catch (error) {
     if (currentRetry < maxRetries) {
       await new Promise((resolve) => {
-        setTimeout(resolve, Math.pow(delay, currentRetry + 1));
+        setTimeout(resolve, delay * Math.pow(backoff, currentRetry + 1));
       });
 
       return runWithRetry(fn, {
+        backoff,
         currentRetry: currentRetry + 1,
         delay,
         maxRetries,
