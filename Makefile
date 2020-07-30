@@ -36,7 +36,7 @@ build/%:
 .PHONY: filter-non-minor-tags
 filter-non-minor-tags: ## Filter out all non-semver-minor tags from an input file
 	@$(call log-info,"Filtering all semver minor tags in $(input)...")
-	@bash ./run.sh minor-tags $(input) $(input)
+	@bash ./run.sh minor-tags $(input)
 	@$(call log-success,"Non-semver-minor tags in $(input) successfully filtered.")
 
 .PHONY: get-tags
