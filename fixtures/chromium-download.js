@@ -6,6 +6,31 @@ process.on('unhandledRejection', (reason) => {
   throw reason;
 });
 
+async function runWithRetry(
+  fn,
+  { backoff = 2, currentRetry = 0, delay = 100, maxRetries = 5 } = {}
+) {
+  try {
+    return await fn();
+  } catch (error) {
+    if (currentRetry < maxRetries) {
+      await new Promise((resolve) => {
+        setTimeout(resolve, delay * Math.pow(backoff, currentRetry + 1));
+      });
+
+      console.log('Retrying...')
+      return runWithRetry(fn, {
+        backoff,
+        currentRetry: currentRetry + 1,
+        delay,
+        maxRetries,
+      });
+    }
+
+    throw error;
+  }
+}
+
 function rmdirRecursive(dirPath) {
   if (fs.existsSync(dirPath)) {
     const files = fs.readdirSync(dirPath);
@@ -69,31 +94,6 @@ function downloadChromium() {
       reject(error);
     });
   });
-}
-
-async function runWithRetry(
-  fn,
-  { backoff = 2, currentRetry = 0, delay = 100, maxRetries = 3 } = {}
-) {
-  try {
-    return await fn();
-  } catch (error) {
-    if (currentRetry < maxRetries) {
-      await new Promise((resolve) => {
-        setTimeout(resolve, delay * Math.pow(backoff, currentRetry + 1));
-      });
-
-      console.log('Retrying...')
-      return runWithRetry(fn, {
-        backoff,
-        currentRetry: currentRetry + 1,
-        delay,
-        maxRetries,
-      });
-    }
-
-    throw error;
-  }
 }
 
 void runWithRetry(downloadChromium);
