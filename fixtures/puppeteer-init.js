@@ -1,10 +1,14 @@
 const puppeteer = require('puppeteer');
 
-(async () => {
+process.on('unhandledRejection', (reason) => {
+  throw reason;
+});
+
+async function puppeteerInit() {
   const browser = await puppeteer.launch({
     headless: true,
   });
   await browser.close();
-})().catch((e) => {
-  throw e;
-});
+}
+
+void puppeteerInit();

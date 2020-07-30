@@ -2,6 +2,10 @@ const cp = require('child_process');
 const fs = require('fs');
 const path = require('path');
 
+process.on('unhandledRejection', (reason) => {
+  throw reason;
+});
+
 function rmdirRecursive(dirPath) {
   if (fs.existsSync(dirPath)) {
     const files = fs.readdirSync(dirPath);
@@ -69,7 +73,7 @@ function downloadChromium() {
 
 async function runWithRetry(
   fn,
-  { backoff = 2, currentRetry = 0, delay = 100, maxRetries = 3 } = {},
+  { backoff = 2, currentRetry = 0, delay = 100, maxRetries = 3 } = {}
 ) {
   try {
     return await fn();
