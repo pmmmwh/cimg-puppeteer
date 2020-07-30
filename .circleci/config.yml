@@ -21,7 +21,7 @@ commands:
       - run:
           name: Build Docker images
           command: |
-            make -j "${CONCURRENCY:=1}" -O build \
+            make -j "${CONCURRENCY:-1}" -O build \
               name="${DOCKER_LOGIN}/puppeteer" \
               progress="plain" \
               versions="${VERSIONS}"
@@ -70,7 +70,7 @@ jobs:
           include-non-minor-tags: false
       - run:
           name: Test built Docker images
-          command: make test name="${DOCKER_LOGIN}/puppeteer" versions="${VERSIONS}"
+          command: make -j "${CONCURRENCY:-1}" -O test name="${DOCKER_LOGIN}/puppeteer" versions="${VERSIONS}"
 
   publish:
     executor: machine
@@ -84,7 +84,7 @@ jobs:
       - build-images
       - run:
           name: Publish built Docker images
-          command: make -j "${CONCURRENCY}" -O publish name="${DOCKER_LOGIN}/puppeteer" versions="${VERSIONS}"
+          command: make -j "${CONCURRENCY:-1}" -O publish name="${DOCKER_LOGIN}/puppeteer" versions="${VERSIONS}"
 
 workflows:
   version: 2
