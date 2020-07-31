@@ -106,7 +106,8 @@ function command-test() {
   local name="$1"
   local tag="$2"
 
-  local container="test-${tag}"
+  # This is intentionally global - it will be used by `trap` for cleanup
+  container="test-${tag}"
 
   # Spawn a new container with an interactive shell to keep it alive
   docker run --detach --init --privileged --tty \
@@ -114,8 +115,7 @@ function command-test() {
     "${name}:${tag}" bash 1>/dev/null
 
   # Copy fixtures and the Makefile into the container
-  # shellcheck disable=SC2086
-  docker cp ./fixtures/. ${container}:/home/circleci/project/fixtures
+  docker cp ./fixtures/. "${container}":/home/circleci/project/fixtures
   docker cp ./Makefile "${container}":/home/circleci/project/Makefile
 
   # Parse the container's Node.js version
@@ -135,13 +135,16 @@ function command-test() {
     puppeteer_versions+=("3" "4" "5")
   fi
 
+  # Cleanup the spawned container on error or exit
+  function cleanup() {
+    docker kill "${container}" 1>/dev/null
+    docker rm "${container}" 1>/dev/null
+  }
+
+  trap cleanup err exit
+
   # Run tests for all compatible puppeteer versions
   docker exec "${container}" make verify-all puppeteer="${puppeteer_versions[*]}"
-
-  # Cleanup the spawned container
-  docker kill "${container}" 1>/dev/null
-  # shellcheck disable=SC2086
-  docker rm ${container} 1>/dev/null
 }
 
 case $# in
