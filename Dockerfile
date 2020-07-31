@@ -32,6 +32,7 @@ RUN useradd --uid=3434 --user-group --create-home circleci && \
 	echo 'circleci ALL=NOPASSWD: ALL' >>/etc/sudoers.d/50-circleci && \
 	echo 'Defaults    env_keep += "DEBIAN_FRONTEND"' >>/etc/sudoers.d/env_keep && \
 	sudo -u circleci mkdir /home/circleci/project || true
+
 # Older versions of cimg/node mutates this variable, which in turn breaks npm/yarn.
 # We will patch it here to ensure it is correctly set.
 ENV HOME=/home/circleci/project
@@ -40,9 +41,5 @@ WORKDIR /home/circleci/project
 
 FROM builder
 
-# Enable user namespace cloning for Chromium's sandboxing.
-# For security, we also ensure ptrace debugging is only allowed for parent processes.
-# This command will fail when building from incompatible kernels (e.g. macOS).
-# For development purposes, one could make it fail gracefully by appending `|| true`.
-RUN sudo sysctl -w kernel.unprivileged_userns_clone=1 && \
-  sudo sysctl -w kernel.yama.ptrace_scope=1
+# Globally enable unprivileged user namespaces for Chromium's sandboxing.
+RUN echo "kernel.unprivileged_userns_clone=1" | sudo tee -a /etc/sysctl.d/99-enable-user-namespaces.conf > /dev/null
