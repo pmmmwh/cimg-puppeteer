@@ -6,6 +6,8 @@ process.on('unhandledRejection', (reason) => {
   throw reason;
 });
 
+const chromiumInstallPath = path.join(__dirname, '..', 'node_modules/puppeteer/.local-chromium');
+
 async function runWithRetry(
   fn,
   { backoff = 2, currentRetry = 0, delay = 100, maxRetries = 5 } = {}
@@ -83,8 +85,7 @@ function downloadChromium() {
           resolve();
         }
       } else {
-        const installPath = path.join(__dirname, '..', 'node_modules/puppeteer/.local-chromium');
-        rmdirRecursive(installPath);
+        rmdirRecursive(chromiumInstallPath);
 
         reject(new Error('Chromium download failed!'));
       }
@@ -96,4 +97,32 @@ function downloadChromium() {
   });
 }
 
-void runWithRetry(downloadChromium);
+void runWithRetry(downloadChromium).then(() => {
+  // Node.js v14.0.0 have bugs related to stream closing,
+  // which in turn breaks zip extraction of Puppeteer v3+.
+  if (process.version === 'v14.0.0') {
+    const { version: puppeteerVersion } = require('puppeteer/package.json');
+
+    if (parseInt(puppeteerVersion, 10) > 2) {
+      const { _preferredRevision: chromiumRevision } = require('puppeteer');
+
+      // Clean the installation directory just to be safe
+      rmdirRecursive(path.join(chromiumInstallPath, `linux-${chromiumRevision}`));
+
+      // Unzip Chromium into its correct place with posix unzip
+      console.log('Node.js v14.0.0 - Unzipping from shell...');
+      cp.execFileSync('unzip', [
+        '-o',
+        '-q',
+        '-d',
+        path.join(path.join(chromiumInstallPath, `linux-${chromiumRevision}`)),
+        path.join(chromiumInstallPath, 'chrome-linux.zip'),
+      ]);
+
+      // Delete the Chromium zip file
+      fs.unlinkSync(path.join(chromiumInstallPath, 'chrome-linux.zip'));
+
+      console.log('Node.js v14.0.0 - Chromium unzip success!');
+    }
+  }
+});
