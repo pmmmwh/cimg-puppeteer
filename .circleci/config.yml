@@ -97,17 +97,17 @@ workflows:
           requires:
             - get-tags
 
-#  release:
-#    jobs:
-#      - get-tags
-#      - publish:
-#          context: DOCKER_CREDENTIALS
-#          requires:
-#            - get-tags
-#    triggers:
-#      - schedule:
-#          cron: "0 0 * * *"
-#          filters:
-#            branches:
-#              only:
-#                - main
+  release:
+    jobs:
+      - get-tags
+      - publish:
+          context: DOCKER_CREDENTIALS
+          requires:
+            - get-tags
+    triggers:
+      - schedule:
+          cron: "0 0 * * *"
+          filters:
+            branches:
+              only:
+                - main
