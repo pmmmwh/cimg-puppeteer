@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -euo pipefail
+
 function error() {
   printf "\033[31m%-8s\033[0m %s\n" "error" "$@" >&2
   exit 1
@@ -110,9 +112,9 @@ function command-test() {
   container="test-${tag}"
 
   # Spawn a new container with an interactive shell to keep it alive
-  docker run --detach --init --privileged --tty \
-    --name "${container}" --user circleci:circleci \
-    "${name}:${tag}" bash 1>/dev/null
+  docker run --detach --init --tty \
+    --cap-add=SYS_ADMIN --name "${container}" --user circleci:circleci \
+    "${name}:${tag}" bash >/dev/null
 
   # Copy fixtures and the Makefile into the container
   docker cp ./fixtures/. "${container}":/home/circleci/project/fixtures
@@ -137,8 +139,11 @@ function command-test() {
 
   # Cleanup the spawned container on error or exit
   function cleanup() {
-    docker kill "${container}" 1>/dev/null
-    docker rm "${container}" 1>/dev/null
+    # Check for container's existence - it might have crashed
+    if docker ps -a | grep -q "${container}"; then
+      docker kill "${container}" >/dev/null
+      docker rm "${container}" >/dev/null
+    fi
   }
 
   trap cleanup err exit
