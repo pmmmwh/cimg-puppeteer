@@ -106,7 +106,8 @@ function command-test() {
   local name="$1"
   local tag="$2"
 
-  local container="test-${tag}"
+  # This is intentionally global - it will be used by `trap` for cleanup
+  container="test-${tag}"
 
   # Spawn a new container with an interactive shell to keep it alive
   docker run --detach --init --privileged --tty \
