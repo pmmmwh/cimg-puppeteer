@@ -73,7 +73,7 @@ function command-minor-tags() {
   fi
 
   if [[ -z "$1" ]]; then
-    error "Received invalid arguments: $1 ${2-""}"
+    error "Received invalid arguments: $1 ${2-}"
   fi
 
   local input="$1"
