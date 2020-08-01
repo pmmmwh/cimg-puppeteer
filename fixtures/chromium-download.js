@@ -1,9 +1,5 @@
-const { cp, fs } = require('./commons');
 const path = require('path');
-
-process.on('unhandledRejection', (reason) => {
-  throw reason;
-});
+const { cp, fs } = require('./commons');
 
 const chromiumInstallPath = path.join(__dirname, '..', 'node_modules/puppeteer/.local-chromium');
 

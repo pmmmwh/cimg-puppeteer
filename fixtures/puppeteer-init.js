@@ -1,8 +1,5 @@
 const puppeteer = require('puppeteer');
-
-process.on('unhandledRejection', (reason) => {
-  throw reason;
-});
+require('./commons');
 
 async function puppeteerInit() {
   const browser = await puppeteer.launch({
