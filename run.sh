@@ -76,7 +76,9 @@ function command-minor-tags() {
     error "Received invalid arguments: $1 ${2-}"
   fi
 
-  local input="$1"
+  # ShellCheck gets confused if these lines are merged
+  local input
+  input="$1"
   local output="${2-$input}"
 
   local parts=()
