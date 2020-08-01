@@ -1,5 +1,8 @@
 version: 2.1
 
+orbs:
+  docker: circleci/docker@1.2.1
+
 commands:
   build-images:
     parameters:
@@ -32,9 +35,6 @@ commands:
           name: Set max possible concurrency for current executor
           command: echo 'export CONCURRENCY="$(grep -cP '^processor' /proc/cpuinfo)"' >> $BASH_ENV
 
-orbs:
-  docker: circleci/docker@1.2.1
-
 executors:
   machine:
     parameters:
@@ -58,6 +58,16 @@ jobs:
           root: ./workspace
           paths:
             - tags.txt
+
+  shellcheck:
+    docker:
+      - image: koalaman/shellcheck-alpine:v0.7.1
+    working_directory: ~/project
+    steps:
+      - checkout
+      - run:
+          name: Lint all shell scripts with shellcheck
+          command: make shellcheck
 
   test:
     executor: machine
@@ -91,6 +101,8 @@ workflows:
 
   test:
     jobs:
+      - docker/hadolint
+      - shellcheck
       - get-tags
       - test:
           context: DOCKER_CREDENTIALS
