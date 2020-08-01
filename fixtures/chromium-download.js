@@ -1,5 +1,4 @@
-const cp = require('child_process');
-const fs = require('fs');
+const { cp, fs } = require('./commons');
 const path = require('path');
 
 process.on('unhandledRejection', (reason) => {
@@ -33,20 +32,22 @@ async function runWithRetry(
   }
 }
 
-function rmdirRecursive(dirPath) {
-  if (fs.existsSync(dirPath)) {
-    const files = fs.readdirSync(dirPath);
-    files.forEach((file) => {
-      const filePath = path.join(dirPath, file);
-      const fileStats = fs.lstatSync(filePath);
-      if (fileStats.isDirectory()) {
-        rmdirRecursive(filePath);
-      } else {
-        fs.unlinkSync(filePath);
-      }
-    });
+async function rmdirRecursive(dirPath) {
+  if (await fs.exists(dirPath)) {
+    const files = await fs.readdir(dirPath);
+    await Promise.all(
+      files.map(async (file) => {
+        const filePath = path.join(dirPath, file);
+        const fileStats = await fs.lstat(filePath);
+        if (fileStats.isDirectory()) {
+          await rmdirRecursive(filePath);
+        } else {
+          await fs.unlink(filePath);
+        }
+      })
+    );
 
-    fs.rmdirSync(dirPath);
+    await fs.rmdir(dirPath);
   }
 }
 
@@ -85,9 +86,9 @@ function downloadChromium() {
           resolve();
         }
       } else {
-        rmdirRecursive(chromiumInstallPath);
-
-        reject(new Error('Chromium download failed!'));
+        void rmdirRecursive(chromiumInstallPath).then(() => {
+          reject(new Error('Chromium download failed!'));
+        });
       }
     });
 
@@ -97,7 +98,7 @@ function downloadChromium() {
   });
 }
 
-void runWithRetry(downloadChromium).then(() => {
+void runWithRetry(downloadChromium).then(async () => {
   // Node.js v14.0.0 have bugs related to stream closing,
   // which in turn breaks zip extraction of Puppeteer v3+.
   if (process.version === 'v14.0.0') {
@@ -107,11 +108,11 @@ void runWithRetry(downloadChromium).then(() => {
       const { _preferredRevision: chromiumRevision } = require('puppeteer');
 
       // Clean the installation directory just to be safe
-      rmdirRecursive(path.join(chromiumInstallPath, `linux-${chromiumRevision}`));
+      await rmdirRecursive(path.join(chromiumInstallPath, `linux-${chromiumRevision}`));
 
       // Unzip Chromium into its correct place with posix unzip
       console.log('Node.js v14.0.0 - Unzipping from shell...');
-      cp.execFileSync('unzip', [
+      await cp.execFile('unzip', [
         '-o',
         '-q',
         '-d',
@@ -120,7 +121,7 @@ void runWithRetry(downloadChromium).then(() => {
       ]);
 
       // Delete the Chromium zip file
-      fs.unlinkSync(path.join(chromiumInstallPath, 'chrome-linux.zip'));
+      await fs.unlink(path.join(chromiumInstallPath, 'chrome-linux.zip'));
 
       console.log('Node.js v14.0.0 - Chromium unzip success!');
     }

@@ -1,12 +1,10 @@
 const cp = require('child_process');
 const util = require('util');
 
-const sudo = (command, args, options) => {
-  return util.promisify(cp.execFile)('sudo', [command, ...args], options);
-};
+const execFile = util.promisify(cp.execFile);
 
 async function installChromiumDeps() {
-  const { stdout: simulateStdout } = await sudo('apt-get', [
+  const { stdout: simulateStdout } = await execFile('apt-get', [
     '--simulate',
     'install',
     'chromium-browser',
@@ -25,7 +23,7 @@ async function installChromiumDeps() {
     return [...acc, dependency];
   }, []);
 
-  await sudo('apt-get', ['install', '-y', ...dependencies]);
+  await execFile('apt-get', ['install', '-y', ...dependencies]);
 }
 
 void installChromiumDeps();
