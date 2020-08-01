@@ -45,6 +45,12 @@ get-tags: ## Get all available tags of a Docker image and output to a file
 	@bash ./run.sh docker-tags $(name) $(output)
 	@$(call log-success,"Docker tags for $(name) saved to $(output).")
 
+.PHONY: hadolint
+hadolint: ## Run hadolint on project Dockerfile
+	@$(call log-info,"Running hadolint on Dockerfile...")
+	@hadolint Dockerfile
+	@$(call log-success,"Dockerfile successfully passed hadolint.")
+
 .PHONY: install-chromium-deps
 install-chromium-deps: ## Install all native dependencies for Chromium on Ubuntu
 	@$(call log-info,"Installing native dependencies for Chromium...")
@@ -58,6 +64,20 @@ publish/%:
 	@$(call log-info,"Publishing image $(name):$(or $(tag),$(@F))...")
 	@docker push docker.io/$(name):$(or $(tag),$(@F))
 	@$(call log-success,"Image $(name):$(or $(tag),$(@F)) successfully published.")
+
+.PHONY: shellcheck
+shellcheck: ## Run shellcheck on all project shell files
+	@$(call log-info,"Running shellcheck on all shell scripts...")
+	@find . -type f -name "*.sh" | xargs shellcheck
+	@$(call log-success,"All shell scripts successfully passed shellcheck.")
+
+.PHONY: test
+test: $(foreach test-version,$(versions),test/$(test-version)) ## Test specific versions of a Docker image
+
+test/%:
+	@$(call log-info,"Running tests on image $(name):$(or $(tag),$(@F))...")
+	@bash ./run.sh "test" $(name) $(or $(tag),$(@F))
+	@$(call log-success,"Tests on image $(name):$(or $(tag),$(@F)) passed!")
 
 .PHONY: verify-all
 verify-all: verify-cleanup verify-execution ## Run all verification steps
@@ -79,17 +99,9 @@ verify-execution: $(foreach pptr-version,$(or $(puppeteer),"latest"),verify-exec
 
 verify-execution/%:
 	@$(call log-info,"Installing Puppeteer@$(@F)...")
-	@PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=1 npm install --loglevel error puppeteer@$(@F)
+	@PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=1 npm install --loglevel error --no-save puppeteer@$(@F)
 	@$(call log-info,"Downloading Chromium...")
 	@node ./fixtures/chromium-download.js
 	@$(call log-info,"Testing for successful Puppeteer initialization...")
 	@node ./fixtures/puppeteer-init.js
 	@$(call log-success,"Image have properly configured prerequisites for Puppeteer@$(@F).")
-
-.PHONY: test
-test: $(foreach test-version,$(versions),test/$(test-version)) ## Test specific versions of a Docker image
-
-test/%:
-	@$(call log-info,"Running tests on image $(name):$(or $(tag),$(@F))...")
-	@bash ./run.sh "test" $(name) $(or $(tag),$(@F))
-	@$(call log-success,"Tests on image $(name):$(or $(tag),$(@F)) passed!")
