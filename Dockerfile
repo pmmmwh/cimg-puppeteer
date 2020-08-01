@@ -38,6 +38,7 @@ RUN if ! id -u circleci; then \
 
 # Globally enable unprivileged user namespaces for Chromium's sandboxing.
 # NOTE: This will only have effect if the user is running with kernel privileges enabled.
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 RUN echo "kernel.unprivileged_userns_clone=1" | tee -a /etc/sysctl.d/99-enable-user-namespaces.conf > /dev/null
 
 # Older versions of cimg/node mutates this variable, which in turn breaks npm/yarn.
