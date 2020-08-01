@@ -67,7 +67,9 @@ jobs:
       - checkout
       - run:
           name: Lint all shell scripts with shellcheck
-          command: make shellcheck
+          # Alpine images does not contain a lot of the "usual" stuff like make,
+          # so we duplicate the command here in order to make tests run
+          command: find . -type f -name "*.sh" | xargs shellcheck
 
   test:
     executor: machine
