@@ -61,7 +61,7 @@ function command-docker-tags() {
 
   # Get list of image tags
   local tags
-  tags="$(curl -s -G -H "Accept: application/json" -H "Authorization: Bearer ${token}" "${listUri}" | jq -r ".tags | @sh")"
+  tags="$(curl -s -G -H "Accept: application/json" -H "Authorization: Bearer ${token}" "${listUri}" | jq -r '.tags | map(select(test("-") | not)) | @sh')"
 
   # Output
   export-to-file "$(echo "${tags}" | tr -d \'\")" "${output}"
