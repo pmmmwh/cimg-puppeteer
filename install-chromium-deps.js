@@ -23,6 +23,20 @@ async function installChromiumDeps() {
     return [...acc, dependency];
   }, []);
 
+  // For some reason, some crucial dependencies might not install in certain versions of Ubuntu,
+  // so we patch them in forcefully to make sure they exist in the final image.
+  if (!dependencies.includes('libxss1')) {
+    dependencies.push('libxss1');
+  }
+  if (!dependencies.includes('libnss3')) {
+    dependencies.push('libnss3');
+  }
+
+  dependencies.sort();
+
+  console.log('Installing chromium dependencies ...');
+  console.log(JSON.stringify(dependencies, null, 2));
+
   await execFile('apt-get', ['install', '-y', ...dependencies]);
 }
 
