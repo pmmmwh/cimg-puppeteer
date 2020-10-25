@@ -25,11 +25,14 @@ async function installChromiumDeps() {
 
   // For some reason, some crucial dependencies might not install in certain versions of Ubuntu,
   // so we patch them in forcefully to make sure they exist in the final image.
-  if (!dependencies.includes('libxss1')) {
-    dependencies.push('libxss1');
-  }
   if (!dependencies.includes('libnss3')) {
     dependencies.push('libnss3');
+  }
+  if (!dependencies.includes('libx11-xcb1')) {
+    dependencies.push('libx11-xcb1');
+  }
+  if (!dependencies.includes('libxss1')) {
+    dependencies.push('libxss1');
   }
 
   dependencies.sort();
