@@ -152,6 +152,7 @@ const KNOWN_DEPENDENCIES = [
   'libxrandr2',
   'libxrender1',
   'libxshmfence1',
+  'libxss1',
   'libxt6',
   'libxtst6',
   'libxv1',
