@@ -59,7 +59,7 @@ function command-docker-tags() {
   local data=("service=registry.docker.io" "scope=repository:${image}:pull")
   token="$(curl -s -G --data-urlencode "${data[0]}" --data-urlencode "${data[1]}" ${tokenUri} | jq -r ".token")"
 
-  # Get list of image tags
+  # Get list of image tags (filters out variant images)
   local tags
   tags="$(curl -s -G -H "Accept: application/json" -H "Authorization: Bearer ${token}" "${listUri}" | jq -r '.tags | map(select(test("-") | not)) | @sh')"
 

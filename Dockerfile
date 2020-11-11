@@ -14,7 +14,6 @@ COPY ./install-chromium-deps.js /tmp
 # it has to be a single RUN instruction for cacheability and image size.
 # - Add the Universe repository
 # - Update the apt repository list files
-# - Upgrade outdated packages on the image and pull in additional ones if needed
 # - Install gosu for deescalation during docker build
 # - Ensure sudo is installed (it is not for older versions)
 # - Install necessary dependencies for Chromium
