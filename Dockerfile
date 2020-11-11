@@ -22,10 +22,6 @@ COPY ./install-chromium-deps.js /tmp
 # - Remove Chromium dependencies installation script
 RUN add-apt-repository universe; \
   apt-get update; \
-  # This upgrade is to force old images pull in newer dependencies -
-  # they are required for Chromium to run without crashing.
-  # hadolint ignore=DL3005
-  apt-get --with-new-pkgs -y upgrade; \
   apt-get install --no-install-recommends -y gosu sudo; \
   "$(which node)" /tmp/install-chromium-deps.js; \
   rm -rf /var/lib/apt/lists/*; \
