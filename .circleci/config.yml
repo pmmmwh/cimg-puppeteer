@@ -1,7 +1,7 @@
 version: 2.1
 
 orbs:
-  docker: circleci/docker@1.2.1
+  docker: circleci/docker@1.5.0
 
 commands:
   build-images:
@@ -39,7 +39,7 @@ executors:
   machine:
     parameters:
       image:
-        default: ubuntu-1604:202007-01
+        default: ubuntu-2004:202010-01
         type: string
     machine:
       image: << parameters.image >>
@@ -47,7 +47,7 @@ executors:
 jobs:
   get-tags:
     docker:
-      - image: cimg/base:2020.07
+      - image: cimg/base:2020.11
     working_directory: ~/project
     steps:
       - checkout
@@ -77,6 +77,8 @@ jobs:
     working_directory: ~/project
     steps:
       - checkout
+      - docker/check:
+          use-docker-credentials-store: true
       - set-concurrency
       - build-images:
           include-non-minor-tags: false
