@@ -14,6 +14,7 @@ COPY ./install-chromium-deps.js /tmp
 # it has to be a single RUN instruction for cacheability and image size.
 # - Add the Universe repository
 # - Update the apt repository list files
+# - Upgrade outdated packages on the image and pull in additional ones if needed
 # - Install gosu for deescalation during docker build
 # - Ensure sudo is installed (it is not for older versions)
 # - Install necessary dependencies for Chromium
@@ -21,6 +22,7 @@ COPY ./install-chromium-deps.js /tmp
 # - Remove Chromium dependencies installation script
 RUN add-apt-repository universe; \
   apt-get update; \
+  apt-get --with-new-pkgs upgrade; \
   apt-get install --no-install-recommends -y gosu sudo; \
   "$(which node)" /tmp/install-chromium-deps.js; \
   rm -rf /var/lib/apt/lists/*; \
