@@ -29,6 +29,7 @@ const KNOWN_DEPENDENCIES = [
   "libpango-1.0-0",
   "libwayland-client0",
   "libx11-6",
+  "libx11-xcb1",
   "libxcb1",
   "libxcomposite1",
   "libxdamage1",
