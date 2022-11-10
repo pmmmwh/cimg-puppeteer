@@ -1,7 +1,7 @@
 version: 2.1
 
 orbs:
-  docker: circleci/docker@1.5.0
+  docker: circleci/docker@2.1.4
 
 commands:
   build-images:
@@ -39,7 +39,7 @@ executors:
   machine:
     parameters:
       image:
-        default: ubuntu-2004:202010-01
+        default: ubuntu-2204:2022.10.2
         type: string
     machine:
       image: << parameters.image >>
@@ -47,7 +47,7 @@ executors:
 jobs:
   get-tags:
     docker:
-      - image: cimg/base:2020.11
+      - image: cimg/base:2022.11
         auth:
           username: $DOCKER_LOGIN
           password: $DOCKER_PASSWORD
@@ -64,7 +64,7 @@ jobs:
 
   shellcheck:
     docker:
-      - image: koalaman/shellcheck-alpine:v0.7.1
+      - image: koalaman/shellcheck-alpine:v0.8.0
         auth:
           username: $DOCKER_LOGIN
           password: $DOCKER_PASSWORD
@@ -110,6 +110,11 @@ workflows:
   version: 2
 
   test:
+    when:
+      not:
+        equal:
+          - << pipeline.trigger_source >>
+          - scheduled_pipeline
     jobs:
       - docker/hadolint
       - shellcheck:
@@ -122,6 +127,10 @@ workflows:
             - get-tags
 
   release:
+    when:
+      equal:
+        - << pipeline.git.branch >>
+        - main
     jobs:
       - get-tags:
           context: DOCKER_CREDENTIALS
@@ -129,10 +138,3 @@ workflows:
           context: DOCKER_CREDENTIALS
           requires:
             - get-tags
-    triggers:
-      - schedule:
-          cron: '0 0 * * *'
-          filters:
-            branches:
-              only:
-                - main
