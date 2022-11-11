@@ -38,6 +38,7 @@ const KNOWN_DEPENDENCIES = [
   'libxfixes3',
   'libxkbcommon0',
   'libxrandr2',
+  'libxshmfence1',
   'libxss1',
   'libxtst6',
   'wget',
