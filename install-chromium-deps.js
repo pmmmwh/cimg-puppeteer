@@ -31,6 +31,7 @@ const KNOWN_DEPENDENCIES = [
   'libx11-6',
   'libx11-xcb1',
   'libxcb1',
+  'libxcb-dri3',
   'libxcomposite1',
   'libxdamage1',
   'libxext6',
