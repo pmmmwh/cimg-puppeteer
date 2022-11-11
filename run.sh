@@ -135,7 +135,7 @@ function command-test() {
   local puppeteer_versions=("2")
   if [[ ($major -eq 10 && $minor -eq 18 && $patch -ge 1) || ($major -eq 10 && $minor -gt 18) || $major -gt 10 ]]; then
     # v3-v13 of puppeteer support Node.js 10.18.1+
-    puppeteer_versions+=("3" "13")
+    puppeteer_versions+=("3" "10")
   elif [[ ($major -eq 14 && $minor -eq 1 && $patch -ge 0) || ($major -eq 14 && $minor -gt 1) || $major -gt 14 ]]; then
     # v14-v19 of puppeteer support Node.js 14.1.0+
     puppeteer_versions+=("14" "19")
