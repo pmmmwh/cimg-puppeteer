@@ -38,6 +38,7 @@ const KNOWN_DEPENDENCIES = [
   'libxkbcommon0',
   'libxrandr2',
   'libxss1',
+  'libxtst6',
   'wget',
   'xdg-utils',
 ];
