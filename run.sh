@@ -116,16 +116,20 @@ function command-test() {
   docker run --detach --init --tty \
     --cap-add=SYS_ADMIN --name "${container}" --user circleci:circleci \
     "${name}:${tag}" bash >/dev/null
+  echo $?
 
   # Copy fixtures and the Makefile into the container
   docker cp ./fixtures/. "${container}":/home/circleci/project/fixtures
+  echo $?
   docker cp ./Makefile "${container}":/home/circleci/project/Makefile
+  echo $?
 
   # Parse the container's Node.js version
   local node_version
   local parts=()
   node_version=$(docker exec "${container}" node --version | sed -e "s|^[vV]||g")
   IFS="." read -ra parts <<<"${node_version}"
+  echo $?
 
   local major="${parts[0]}"
   local minor="${parts[1]}"
@@ -154,6 +158,7 @@ function command-test() {
 
   # Run tests for all compatible puppeteer versions
   docker exec "${container}" make verify-all puppeteer="${puppeteer_versions[*]}"
+  echo $?
 }
 
 case $# in
