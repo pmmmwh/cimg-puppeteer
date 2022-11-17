@@ -116,16 +116,20 @@ function command-test() {
   docker run --detach --init --tty \
     --cap-add=SYS_ADMIN --name "${container}" --user circleci:circleci \
     "${name}:${tag}" bash >/dev/null
+  echo $?
 
   # Copy fixtures and the Makefile into the container
   docker cp ./fixtures/. "${container}":/home/circleci/project/fixtures
+  echo $?
   docker cp ./Makefile "${container}":/home/circleci/project/Makefile
+  echo $?
 
   # Parse the container's Node.js version
   local node_version
   local parts=()
   node_version=$(docker exec "${container}" node --version | sed -e "s|^[vV]||g")
   IFS="." read -ra parts <<<"${node_version}"
+  echo $?
 
   local major="${parts[0]}"
   local minor="${parts[1]}"
@@ -134,8 +138,11 @@ function command-test() {
   # Puppeteer@2 is used as a baseline since it supports all available tags for cimg/node_version
   local puppeteer_versions=("2")
   if [[ ($major -eq 10 && $minor -eq 18 && $patch -ge 1) || ($major -eq 10 && $minor -gt 18) || $major -gt 10 ]]; then
-    # All of v3, v4 and v5 of puppeteer support Node.js 10.18.1+
-    puppeteer_versions+=("3" "4" "5")
+    # v3-v13 of puppeteer support Node.js 10.18.1+
+    puppeteer_versions+=("3" "10")
+  elif [[ ($major -eq 14 && $minor -eq 1 && $patch -ge 0) || ($major -eq 14 && $minor -gt 1) || $major -gt 14 ]]; then
+    # v14-v19 of puppeteer support Node.js 14.1.0+
+    puppeteer_versions+=("14" "19")
   fi
 
   # Cleanup the spawned container on error or exit
@@ -151,6 +158,7 @@ function command-test() {
 
   # Run tests for all compatible puppeteer versions
   docker exec "${container}" make verify-all puppeteer="${puppeteer_versions[*]}"
+  echo $?
 }
 
 case $# in
